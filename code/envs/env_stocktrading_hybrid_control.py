@@ -403,7 +403,8 @@ class StockTradingEnv(gym.Env):
 
         # pdb.set_trace()
         holding_amount = np.zeros((self.stock_dim,1), dtype=int)
-        state = np.concatenate((covs, technical_indicators, hidden_np1, hidden_np2, holding_amount), axis=-1)
+        past_reward = np.zeros((self.stock_dim,self.reward_window), dtype=int)
+        state = np.concatenate((covs, technical_indicators, hidden_np1, hidden_np2, holding_amount,past_reward), axis=-1)
         # print("Initial: ",state.shape)
         return state
 
