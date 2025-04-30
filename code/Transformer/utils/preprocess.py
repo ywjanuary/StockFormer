@@ -183,7 +183,7 @@ class FeatureEngineer:
         unique_ticker = stock.tic.unique()
 
         for indicator in self.tech_indicator_list:
-            indicator_df = pd.DataFrame()
+            indicator_df = []#pd.DataFrame()
             for i in range(len(unique_ticker)):
                 try:
                     temp_indicator = stock[stock.tic == unique_ticker[i]][indicator]
@@ -192,11 +192,11 @@ class FeatureEngineer:
                     temp_indicator["date"] = df[df.tic == unique_ticker[i]][
                         "date"
                     ].to_list()
-                    indicator_df = indicator_df.append(
-                        temp_indicator, ignore_index=True
-                    )
+                    indicator_df.append(temp_indicator)
                 except Exception as e:
                     print(e)
+            
+            indicator_df = pd.concat(indicator_df, ignore_index=True)
             df = df.merge(
                 indicator_df[["tic", "date", indicator]], on=["tic", "date"], how="left"
             )

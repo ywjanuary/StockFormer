@@ -144,7 +144,7 @@ class DRLAgent:
         return model
 
     def train_model(self, model, tb_log_name, check_freq, ck_dir, log_dir, eval_env, total_timesteps=5000, verbose=1, deterministic=True):
-        eval_callback = EvalCallback(eval_env, best_model_save_path=ck_dir, log_path=log_dir, eval_freq=check_freq, n_eval_episodes=1, deterministic=deterministic, render=False)
+        eval_callback = EvalCallback(eval_env, best_model_save_path=ck_dir, log_path=log_dir, eval_freq=check_freq, n_eval_episodes=5, deterministic=deterministic, render=False)
         tb_callback=TensorboardCallback(verbose=verbose)
         callback = CallbackList([eval_callback, tb_callback])
 

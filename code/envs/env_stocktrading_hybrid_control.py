@@ -52,7 +52,7 @@ class StockTradingEnv(gym.Env):
         initial=True,
         model_name="",
         iteration="",
-        device='cuda:0',
+        device='cpu',
         print_additional_flag=0,
     ):
         # start time
@@ -85,9 +85,9 @@ class StockTradingEnv(gym.Env):
         self.temporal_len = temporal_len
         self.hidden_channel = hidden_channel
 
-
+        self.reward_window = 10
         self.action_space = spaces.Box(low=-1, high=1, shape=(self.action_dim,))
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_space, self.state_space+len(self.tech_indicator_list)+2*self.hidden_channel+1)) # cov matrix list + technical list + temporal feature * 60 + prediction labels + holding amount
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_space, self.state_space+len(self.tech_indicator_list)+2*self.hidden_channel+1+self.reward_window)) # cov matrix list + technical list + temporal feature * 60 + prediction labels + holding amount
         self.hidden_state_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_space, self.hidden_channel+1))
 
         self.data = self.df.loc[self.day, :]
@@ -439,8 +439,16 @@ class StockTradingEnv(gym.Env):
         
         holding_amount = np.array(self.info[-self.stock_dim : ]) # (stock_dim, 1)
         holding_amount_norm = ((holding_amount * np.array(self.info[1: 1+self.stock_dim]))/self.end_total_asset).reshape(self.stock_dim, 1)
-
-        state = np.concatenate((covs, technical_indicators, hidden_np1, hidden_np2, holding_amount_norm), axis=-1)
+        # Add past rewards to the state
+        reward_window = self.reward_window  # Use the past 5 rewards
+        past_rewards = self.rewards_memory[-reward_window:] if len(self.rewards_memory) >= reward_window else self.rewards_memory
+        past_rewards = np.pad(past_rewards, (reward_window - len(past_rewards), 0), 'constant')  # Pad with zeros if not enough rewards
+        past_rewards = np.array(past_rewards).reshape(-1, 1)  # Reshape to match state dimensions
+        past_rewards = np.tile(past_rewards, (self.stock_dim, 1))
+        # Concatenate all features to form the state
+        state = np.concatenate((covs, technical_indicators, hidden_np1, hidden_np2, holding_amount_norm, past_rewards), axis=-1)
+        
+        #state = np.concatenate((covs, technical_indicators, hidden_np1, hidden_np2, holding_amount_norm), axis=-1)
         # print("Update: ",state.shape)
         return state
 
@@ -505,7 +513,7 @@ class StockTradingEnv(gym.Env):
         model = PredictionModel(enc_in=enc_in, dec_in=dec_in, c_out=c_out)
 
         if path is not None:
-            state_dict = torch.load(path, map_location='cuda:0')
+            state_dict = torch.load(path, map_location='cpu')
             new_state_dict = OrderedDict()
             for k, v in state_dict.items(): 
                 name = k[7:] 

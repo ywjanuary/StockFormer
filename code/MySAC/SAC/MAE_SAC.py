@@ -117,7 +117,7 @@ class SAC(OffPolicyAlgorithm):
         d_layers=1,
         d_ff=256,
         dropout=0.05,
-        transformer_device = 'cuda:0',
+        transformer_device = 'cpu',
         transformer_path = None,
         critic_alpha=1,
         actor_alpha=0,
@@ -170,7 +170,7 @@ class SAC(OffPolicyAlgorithm):
             state_dict = th.load(transformer_path, map_location=transformer_device)
             new_state_dict = OrderedDict()
             for k, v in state_dict.items(): 
-                name = k[7:] 
+                name = k[7:] #why from 7?
                 new_state_dict[name] = v
             self.state_transformer.load_state_dict(new_state_dict)
             print("Successfully load pretrained model...", transformer_path)

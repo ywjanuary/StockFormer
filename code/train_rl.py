@@ -148,7 +148,7 @@ env_kwargs_test = {
     "csv_path": 'results/csv/'+version+model_name,
     "mode":'test',
     "time_window_start":config.time_window_start,
-    "step_len": 1000,
+    "step_len": 5000,
     "temporal_len": 60,
     "hidden_channel":128,     
     "model_name":model_name[:-1],
@@ -174,9 +174,9 @@ test_trade_gym = Env(df = eval, **env_kwargs_test)
 env_test, _ = test_trade_gym.get_sb_env()
 test_eval_sac = VecMonitor(env_test, log_dir+'_test')
 
-test_trade_gym2 = Env(df = train, **env_kwargs_test)
-env_test2, _ = test_trade_gym2.get_sb_env()
-test_eval_sac2 = VecMonitor(env_test2, log_dir+'_test2')
+# test_trade_gym2 = Env(df = train, **env_kwargs_test)
+# env_test2, _ = test_trade_gym2.get_sb_env()
+# test_eval_sac2 = VecMonitor(env_test2, log_dir+'_test2')
 
 e_train_gym = Env(df = train, **env_kwargs)
 env_train, _ = e_train_gym.get_sb_env()
